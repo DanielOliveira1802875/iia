@@ -8,6 +8,8 @@
 // necessarios para definir e alterar o seu estado.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
+enum class Heuristic { none = 0, bfs, aStar };
+
 class Node
 {    
     // variveis que definem o estado deste nó    
@@ -17,15 +19,21 @@ public:
 
     // Custo total desde a root (custo dos nós ascendentes mais o custo deste nó)
     // IMPORTANTE: devemos colocar apenas o custo desde o pai,
-    // o algoritmo irá posteriormente somar o custo dos ascendestes.
+    // o algoritmo irá posteriormente somar o custo dos ascendentes.
     // Caso o custo seja utitário, podemos ignorar esta variavel.
     int cost;
+
+    Heuristic heuristic;
     
     // Apontador para o pai desta Node
     // Não é necessário definir, o algoritmo encarrega-se disso.
     Node* parent = nullptr;
 
-    Node() { cost = 1; }
+    Node()
+    {
+        cost = 1;
+        heuristic = Heuristic::none;
+    }
     virtual ~Node(){}
 
     ////////////////////////////////////////////////
