@@ -1,7 +1,7 @@
 #pragma once
 #include "DLList.h"
 #include "Node.h"
-#include "MinHeap.h"
+#include "MinHeapPtr.h"
 #include "HashTable.h"
 
 class Search
@@ -9,7 +9,7 @@ class Search
     // lista de nodes para serem expandidas 
     DLList<Node*> open;
     // lista de prioridade com nodes para serem expandidas 
-    MinHeap<Node*>priorityOpen;
+    MinHeapPtr<Node*>priorityOpen;
     // lista de nodes expandidas
     DLList<Node*> closed;
     // Para localizar duplicados de forma mais rapida, a chave é uma string, usar (node->toString).

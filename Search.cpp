@@ -21,16 +21,16 @@ void Search::startSearch()
     useHashTable = false;
 
 
-    if (!bestFS())
-        printStats();
+    /*if (!bestFS())
+        printStats();*/
 
     // DFS
     /*if (!dFS())
         printStats();*/
 
     // BFS
-    /*if (!bFS())
-        printStats();*/
+    if (!bFS())
+        printStats();
 
 
     ///////////////////////////////
@@ -162,7 +162,7 @@ bool Search::dFS()
     while (!open.isEmpty())
     {
         Node* currentNode = open.deleteFromHead();
-        std::cout << currentNode->toString();
+        //std::cout << currentNode->toString();
         if (currentNode->isSolution())
         {            
             printStats(currentNode);
@@ -204,7 +204,7 @@ bool Search::bFS()
     while (!open.isEmpty())
     {
         Node* currentNode = open.deleteFromHead();
-        std::cout << currentNode->toString();
+        //std::cout << currentNode->toString();
         if (currentNode->isSolution())
         {
             printStats(currentNode);
@@ -336,8 +336,8 @@ void Search::clearLists()
         delete open.deleteFromHead();
     while (!closed.isEmpty())
         delete closed.deleteFromHead();
-    while (!priorityOpen.isEmpty())
-        delete priorityOpen.removeMin();
+    priorityOpen.clear();
+
     if (knownStates != nullptr)
     {   // NOTA: Porque passei nullptr no valor do no. Caso contrario, era necessário desalocar a memoria (aqui OU em open e close).
         knownStates->clear();        

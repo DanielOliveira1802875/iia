@@ -148,6 +148,7 @@
     <ClInclude Include="DLList.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="MinHeap.h" />
+    <ClInclude Include="MinHeapPtr.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NumberLink.h" />
     <ClInclude Include="Search.h" />

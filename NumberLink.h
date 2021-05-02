@@ -1,4 +1,5 @@
 #pragma once
+#include "MinHeap.h"
 #include "Node.h"
 
 // Para manter uma lista com todas os numeros/letras e respetivas posicoes no estado (numbers[26])
@@ -9,6 +10,35 @@ struct Letter
     int position1;
     int position2;
     int manhattanDistance;
+};
+
+// Para ajudar a funcao que verifica se todos os caminhos sao possiveis (canConnect())
+struct Target
+{
+    int startPosition;
+    int manhattanDist;
+    bool operator<(Target& other) const
+    {
+        if (this->manhattanDist < other.manhattanDist)
+            return true;
+        return false;
+    }
+    bool operator>(Target& other) const
+    {
+        if (this->manhattanDist > other.manhattanDist)
+            return true;
+        return false;
+    }
+    Target(int startPosition, int manhattanDist)
+    {
+        this->startPosition = startPosition;
+        this->manhattanDist = manhattanDist;
+    }
+    Target()
+    {
+        this->startPosition = 0;
+        this->manhattanDist = 0;
+    }
 };
 
 enum class Direction { up = 0, left, right, down };
@@ -42,10 +72,10 @@ class NumberLink : public Node
     // Guarda o numero de numeros/letras que falta conectar (atual nao incluida)
     int numbersRemaining;
 
-    
+
     NumberLink();
     // Prepara o estado para a ligacao do proximo numero/letra
-    void setNextNumber(); 
+    void setNextNumber();
     // Altera a letra atual para outro caracter (evita que se conecte a ele proprio)
     void maskPathRoot();
     // Restaura a letra atual
@@ -66,9 +96,13 @@ class NumberLink : public Node
     bool is360();
     // Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
     // IMPORTANTE: passar uma copia do estado, pois e alterado.
+
     bool canConnect(char character, char* stateCopy, int startPosition);
+    
     // Verifica se e possivel conectar as restantes letras
     bool isDeadState();
+    bool canConnect2(char* stateCopy, int startPostion, int targetPostion);
+    bool isDeadState2();
 public:
     // Devolve um clone deste estado
     Node* getClone() override;
@@ -76,6 +110,7 @@ public:
     ~NumberLink() override;
     // Devolve uma representação visual deste estado.
     std::string toString() override;
+    std::string toString(char* state_);
     // Compara este estado com outro
     bool operator==(Node& node) override;
     // Verifica se este estado é uma solução
@@ -90,9 +125,9 @@ public:
     // compara o valor heuristico
     bool operator>(Node& node) override;
     // compara o valor heuristico
-     bool operator<(Node& node) override;
+    bool operator<(Node& node) override;
     // compara o valor heuristico
-     bool operator>=(Node& node) override;
-     // comparar o valor heuristico
-     bool operator<=(Node& node) override;
+    bool operator>=(Node& node) override;
+    // comparar o valor heuristico
+    bool operator<=(Node& node) override;
 };

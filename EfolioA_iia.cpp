@@ -89,7 +89,7 @@ int main()
 
     std::cout << "\n#############################\n        INSTANCIA 12\n#############################";    
     char inst12[] = "AD............C..H...E......B.B.H..............................G........GF.....................A....D...F...E....C.......";
-    NumberLink* state12 = new NumberLink(inst12, 11, 11,Heuristic::aStar);
+    NumberLink* state12 = new NumberLink(inst12, 11, 11,Heuristic::bestFs);
     Search search12(state12);
     delete state12;
 
