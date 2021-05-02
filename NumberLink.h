@@ -97,7 +97,7 @@ class NumberLink : public Node
     // Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
     // IMPORTANTE: passar uma copia do estado, pois e alterado.
 
-    bool canConnect(char character, char* stateCopy, int startPosition);
+    bool canConnect(char* stateCopy, int startPosition, int endPosition);
     
     // Verifica se e possivel conectar as restantes letras
     bool isDeadState();
@@ -122,6 +122,8 @@ public:
     void updateSuccessorStats(NumberLink* successor);
     // Gera e devolve uma lista de estados sucessores
     void genSuccessors(DLList<Node*>& successors) override;
+    int goBack(int places, char* stateCpy);
+    bool is360V2();
     // compara o valor heuristico
     bool operator>(Node& node) override;
     // compara o valor heuristico

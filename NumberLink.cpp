@@ -236,13 +236,13 @@ int NumberLink::calcManhattanDistance(int startPosition, int endPosition)
     const int horizontalDistance = abs(startPosition % qntColumns - endPosition % qntColumns);
     const int verticalDistance = abs(startPosition / qntColumns - endPosition / qntColumns);
     // o objetivo é estar conexo com o destino e não coincidir com ele, dai o -1
-    return horizontalDistance + verticalDistance -1; 
+    return horizontalDistance + verticalDistance - 1;
 }
 
 int NumberLink::remainingManhattanDistances()
 {
     int returnValue = 0;
-    for (int i = currentNumber + 1; i < 26; i++)    
+    for (int i = currentNumber + 1; i < 26; i++)
         returnValue += numbers[i].manhattanDistance;
     return returnValue;
 }
@@ -251,7 +251,8 @@ void NumberLink::updateSuccessorStats(NumberLink* successor)
 {
     successor->cost = this->cost + 1;
     if (heuristicType == Heuristic::none) return;
-    const int currentNumberManhattanDistance = calcManhattanDistance(successor->pathHead, numbers[currentNumber].position1);    
+    const int currentNumberManhattanDistance = calcManhattanDistance(successor->pathHead,
+                                                                     numbers[currentNumber].position1);
     successor->heuristic = currentNumberManhattanDistance + remainingManhattanDistances();
     if (heuristicType == Heuristic::aStar)
         successor->heuristic += successor->cost;
@@ -280,14 +281,81 @@ void NumberLink::genSuccessors(DLList<Node*>& successors)
             continue;
         NumberLink* successor = (NumberLink*)getClone();
         successor->moveTo(aroundPathHead[i]);
-        if (successor->isSelfConnectingPath() || successor->is360() || successor->isDeadState())
+        if (successor->isSelfConnectingPath() || successor->is360V2() || successor->isDeadState())
             delete successor;
         else
         {
-            updateSuccessorStats(successor);            
-            successors.addToTail((Node*)successor);            
+            updateSuccessorStats(successor);
+            successors.addToTail((Node*)successor);
         }
-    }    
+    }
+}
+
+int NumberLink::goBack(int places, char* stateCpy)
+{
+    int position = pathHead;    
+    int upPos, downPos, leftPos, rightPos;    
+    for (int i = 0; i < places; i++)
+    {
+        stateCpy[position] = '#';
+        //std::cout << toString(stateCpy);
+        if (*look(Direction::left, position, stateCpy, leftPos) == state[pathHead])
+            position = leftPos;
+        else if (*look(Direction::right, position, stateCpy, rightPos) == state[pathHead])
+            position = rightPos;
+        else if (*look(Direction::up, position, stateCpy, upPos) == state[pathHead])
+            position = upPos;
+        else if (*look(Direction::down, position, stateCpy, downPos) == state[pathHead])
+            position = downPos;
+        else return -1;
+    }
+    int endPos;
+
+    return position;
+}
+
+bool NumberLink::is360V2()
+{
+    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 1];    
+    memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
+    stateCpy[pathRoot] = state[pathHead];
+    int back4 = goBack(4,stateCpy);
+    
+    if (back4 >= 0 && calcManhattanDistance(pathHead,back4) == 1  && state[(pathHead+back4)/2] == '.')
+    {
+        //std::cout << toString(stateCpy);
+        delete[] stateCpy;
+        return true;
+    }
+    memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
+    stateCpy[pathRoot] = state[pathHead];
+    int back5 = goBack(5, stateCpy);
+    if (back5 >= 0 && calcManhattanDistance(pathHead, back5) == 2)
+    {
+        int pos1 = pathHead < back5 ? pathHead : back5;
+        int pos4 = pos1 == pathHead ? back5 : pathHead;
+        if(pathHead / qntColumns == back5 / qntColumns)
+        {
+            if (stateCpy[pos1 + 1] == '.' && stateCpy[pos1 + 2] == '.' && pos1 + 3 == pos4)
+              {
+                //std::cout << toString(stateCpy);
+                delete[] stateCpy;
+                return true;
+              }
+        }
+        else
+        {
+            if (stateCpy[pos1 + qntColumns] == '.' && stateCpy[pos1 + qntColumns*2] == '.' && pos1 + qntColumns*3 == pos4)
+            {
+                //std::cout << toString(stateCpy);
+                delete[] stateCpy;
+                return true;
+            }
+        } 
+    }
+
+    delete[] stateCpy;
+    return false;
 }
 
 bool NumberLink::operator>(Node& node)
@@ -374,24 +442,24 @@ bool NumberLink::is360()
 
 // Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
 // IMPORTANTE: passar uma copia do estado, pois este e alterado.
-bool NumberLink::canConnect(char character, char* stateCopy, int startPosition)
+bool NumberLink::canConnect(char* stateCopy, int startPosition, int endPosition)
 {
     stateCopy[startPosition] = '#';
     //std::cout << toString(stateCopy);
     int upPos, downPos, leftPos, rightPos;
     const char* leftChar = look(Direction::left, startPosition, stateCopy, leftPos);
     const char* rightChar = look(Direction::right, startPosition, stateCopy, rightPos);
-    const char* upChar = look(Direction::up, startPosition, stateCopy, upPos);    
+    const char* upChar = look(Direction::up, startPosition, stateCopy, upPos);
     const char* downChar = look(Direction::down, startPosition, stateCopy, downPos);
 
-    const bool characterFound = (*upChar == character) || (*leftChar == character) ||
-        (*rightChar == character) || (*downChar == character);
+    const bool positionFound = (upPos == endPosition) || (leftPos == endPosition) ||
+                               (rightPos == endPosition) || (downPos == endPosition);
 
-    if (characterFound) return true;
-    if (*upChar == '.' && canConnect(character, stateCopy, upPos)) return true;
-    if (*leftChar == '.' && canConnect(character, stateCopy, leftPos)) return true;
-    if (*rightChar == '.' && canConnect(character, stateCopy, rightPos)) return true;
-    if (*downChar == '.' && canConnect(character, stateCopy, downPos)) return true;  
+    if (positionFound) return true;
+    if (*upChar == '.' && canConnect(stateCopy, upPos, endPosition)) return true;
+    if (*leftChar == '.' && canConnect(stateCopy, leftPos, endPosition)) return true;
+    if (*rightChar == '.' && canConnect(stateCopy, rightPos, endPosition)) return true;
+    if (*downChar == '.' && canConnect(stateCopy, downPos, endPosition)) return true;
 
     return false;
 }
@@ -402,74 +470,17 @@ bool NumberLink::isDeadState()
     bool isDead = false;
     char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 1];
 
-    // Testa todas as letras posteriores a atual (letras nao conexas)
-    const int nextLetterIndex = currentNumber + 1;
-    for (int i = nextLetterIndex; i < totalNumbers && !isDead; i++)
-    {
-        if (connected[i])
-            continue;
-        const char nextLetter = numbers[i].upperLetter;
-        const int position = numbers[i].position1;
-        memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
-        isDead = !canConnect(nextLetter, stateCpy, position);
-    }
-    delete[] stateCpy;
-    return isDead;
-}
-// Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
-// IMPORTANTE: passar uma copia do estado, pois este e alterado.
-bool NumberLink::canConnect2(char* stateCopy, int startPostion, int targetPostion)
-{    
-    MinHeap<Target>priorityQueue;
-    priorityQueue.addValue(Target(startPostion, calcManhattanDistance(startPostion, targetPostion)));
-    while(!priorityQueue.isEmpty())
-    {
-        const Target next = priorityQueue.removeMin();        
-        if (stateCopy[next.startPosition] == '#')
-            continue;
-        
-        stateCopy[next.startPosition] = '#';
-        //std::cout << toString(stateCopy);
-        int upPos, downPos, leftPos, rightPos;
-        const char* upChar = look(Direction::up, next.startPosition, stateCopy, upPos);
-        const char* leftChar = look(Direction::left, next.startPosition, stateCopy, leftPos);
-        const char* rightChar = look(Direction::right, next.startPosition, stateCopy, rightPos);
-        const char* downChar = look(Direction::down, next.startPosition, stateCopy, downPos);
-
-        const bool characterFound = (upPos == targetPostion) || (leftPos == targetPostion) ||
-            (rightPos == targetPostion) || (downPos == targetPostion);
-
-        if (characterFound)
-            return true;
-
-        if (*upChar == '.')
-            priorityQueue.addValue(Target(upPos, calcManhattanDistance(upPos, targetPostion)));
-        if (*leftChar == '.')
-            priorityQueue.addValue(Target(leftPos, calcManhattanDistance(leftPos, targetPostion)));
-        if (*rightChar == '.')
-            priorityQueue.addValue(Target(rightPos, calcManhattanDistance(rightPos, targetPostion)));
-        if (*downChar == '.')
-            priorityQueue.addValue(Target(downPos, calcManhattanDistance(downPos, targetPostion)));
-
-        
-    }
-    return false;
-}
-
-// Verifica se e possivel conectar as restantes letras
-bool NumberLink::isDeadState2()
-{
-    bool isDead = false;
-    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 1];
-
-    // Testa todas as letras posteriores a atual (letras nao conexas)
+    // Testa a letra atual
+    //memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
+    //isDead = !canConnect(stateCpy, pathHead, numbers[currentNumber].position1);
+    // Testa todas as letras restantes
     const int nextLetterIndex = currentNumber + 1;
     for (int i = nextLetterIndex; i < totalNumbers && !isDead; i++)
     {
         if (connected[i])
             continue;
         memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
-        isDead = !canConnect2(stateCpy, numbers[i].position1, numbers[i].position2);
+        isDead = !canConnect(stateCpy, numbers[i].position1, numbers[i].position2);
     }
     delete[] stateCpy;
     return isDead;
