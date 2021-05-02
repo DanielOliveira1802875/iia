@@ -6,7 +6,9 @@ struct Letter
 {
     char upperLetter;
     char lowerLetter;
-    int position;
+    int position1;
+    int position2;
+    int manhattanDistance;
 };
 
 enum class Direction { up = 0, left, right, down };
@@ -16,7 +18,7 @@ class NumberLink : public Node
     // Variaveis globais
     static int qntLines;
     static int qntColumns;
-    static int stateSize;
+    static int outOfBoundsPosition;
     static const int totalNumbers = 26;
     static const char outOfBoundsChar = '?';
     static const char maskChar = '%';
@@ -24,7 +26,6 @@ class NumberLink : public Node
     static const int a = 97;
     // Mantem a lista de numeros/letras e a respetiva posicao no estado
     static Letter numbers[26];
-
 
     // Estado atual
     char* state;
@@ -71,7 +72,7 @@ class NumberLink : public Node
 public:
     // Devolve um clone deste estado
     Node* getClone() override;
-    NumberLink(char* state, int qntLines, int qntColumns);
+    NumberLink(char* state, int qntLines, int qntColumns, Heuristic _heuristicType);
     ~NumberLink() override;
     // Devolve uma representação visual deste estado.
     std::string toString() override;
@@ -81,6 +82,17 @@ public:
     bool isSolution() override;
     // Neste caso, nada faz, pois sao instancias fixas
     void resetState() override;
+    int calcManhattanDistance(int startPosition, int endPosition);
+    int remainingManhattanDistances();
+    void updateSuccessorStats(NumberLink* successor);
     // Gera e devolve uma lista de estados sucessores
     void genSuccessors(DLList<Node*>& successors) override;
+    // compara o valor heuristico
+    bool operator>(Node& node) override;
+    // compara o valor heuristico
+     bool operator<(Node& node) override;
+    // compara o valor heuristico
+     bool operator>=(Node& node) override;
+     // comparar o valor heuristico
+     bool operator<=(Node& node) override;
 };

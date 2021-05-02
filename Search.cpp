@@ -20,9 +20,13 @@ void Search::startSearch()
     withDuplicates = false;
     useHashTable = false;
 
-    // DFS
-    if (!dFS())
+
+    if (!bestFS())
         printStats();
+
+    // DFS
+    /*if (!dFS())
+        printStats();*/
 
     // BFS
     /*if (!bFS())
@@ -92,7 +96,7 @@ Search::~Search()
 }
 
 // Atualiza o atributo pai e custo total de cada sucessor
-void Search::updateNodeStatus(DLList<Node*>& successors, Node* parent)
+void Search::updateNodeParent(DLList<Node*>& successors, Node* parent)
 {
     successors.setIteratorToHead();
     while (successors.isIteratorValid())
@@ -100,7 +104,6 @@ void Search::updateNodeStatus(DLList<Node*>& successors, Node* parent)
         Node* tmp = successors.getIteratorValue();
         if(withDuplicates || reconstructPath)
             tmp->parent = parent;
-        tmp->cost += parent->cost;
         successors.iteratorNext();
     }
 }
@@ -143,6 +146,7 @@ void Search::initializeKnownStates(Node* rootCopy)
 
 bool Search::dFS()
 {
+    
     if(limit == 0) // DFS iterativo
     {
         limit++;
@@ -158,6 +162,7 @@ bool Search::dFS()
     while (!open.isEmpty())
     {
         Node* currentNode = open.deleteFromHead();
+        std::cout << currentNode->toString();
         if (currentNode->isSolution())
         {            
             printStats(currentNode);
@@ -176,7 +181,7 @@ bool Search::dFS()
         ++totExpansions;
         DLList<Node*> newNodes;
         currentNode->genSuccessors(newNodes);
-        updateNodeStatus(newNodes, currentNode);
+        updateNodeParent(newNodes, currentNode);
         if (withDuplicates)  
             removeDuplicates(newNodes);
         totGenerations += newNodes.getSize();
@@ -199,6 +204,7 @@ bool Search::bFS()
     while (!open.isEmpty())
     {
         Node* currentNode = open.deleteFromHead();
+        std::cout << currentNode->toString();
         if (currentNode->isSolution())
         {
             printStats(currentNode);
@@ -208,7 +214,7 @@ bool Search::bFS()
         ++totExpansions;
         DLList<Node*> newNodes;
         currentNode->genSuccessors(newNodes);
-        updateNodeStatus(newNodes, currentNode); // atualiza pais e custos
+        updateNodeParent(newNodes, currentNode); // atualiza pais e custos
         removeDuplicates(newNodes);
         totGenerations += newNodes.getSize();
         open.addToTail(newNodes);
@@ -219,6 +225,44 @@ bool Search::bFS()
     }
     clearLists();
     printStats();
+    return false;
+}
+
+bool Search::bestFS()
+{   
+    Node* rootCopy = root->getClone();
+    priorityOpen.addValue(rootCopy);
+    if (withDuplicates && useHashTable)
+        initializeKnownStates(rootCopy);
+    while (!priorityOpen.isEmpty())
+    {
+        Node* currentNode = priorityOpen.removeMin();
+        //std::cout << currentNode->toString();
+        //std::cout << currentNode->heuristic<< " ";
+        if (currentNode->isSolution())
+        {
+            printStats(currentNode);
+            clearLists();
+            return true;
+        }
+        ++totExpansions;
+        DLList<Node*> newNodes;
+        currentNode->genSuccessors(newNodes);
+        updateNodeParent(newNodes, currentNode);
+        if (withDuplicates)
+            removeDuplicates(newNodes);
+        totGenerations += newNodes.getSize();
+        while (!newNodes.isEmpty())
+        {
+            Node* successor = newNodes.deleteFromHead();
+            priorityOpen.addValue(successor);
+        }
+        if (withDuplicates || reconstructPath)
+            closed.addToHead(currentNode);
+        else
+            delete currentNode;
+    }
+    clearLists();
     return false;
 }
 
@@ -292,6 +336,8 @@ void Search::clearLists()
         delete open.deleteFromHead();
     while (!closed.isEmpty())
         delete closed.deleteFromHead();
+    while (!priorityOpen.isEmpty())
+        delete priorityOpen.removeMin();
     if (knownStates != nullptr)
     {   // NOTA: Porque passei nullptr no valor do no. Caso contrario, era necessário desalocar a memoria (aqui OU em open e close).
         knownStates->clear();        

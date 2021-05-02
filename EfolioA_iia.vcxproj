@@ -139,23 +139,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Damas.cpp" />
     <ClCompile Include="EfolioA_iia.cpp" />
     <ClCompile Include="Node.cpp" />
     <ClCompile Include="NumberLink.cpp" />
-    <ClCompile Include="Puzzle8.cpp" />
-    <ClCompile Include="QuadradoCircular.cpp" />
     <ClCompile Include="Search.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Damas.h" />
     <ClInclude Include="DLList.h" />
     <ClInclude Include="HashTable.h" />
     <ClInclude Include="MinHeap.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="NumberLink.h" />
-    <ClInclude Include="Puzzle8.h" />
-    <ClInclude Include="QuadradoCircular.h" />
     <ClInclude Include="Search.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

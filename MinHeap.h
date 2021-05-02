@@ -111,38 +111,39 @@ int MinHeap<T>::minValueIndex(int index1, int index2)
     if (!isValidIndex(index1) && !isValidIndex(index2)) return -1;
     if (!isValidIndex(index1)) return index2;
     if (!isValidIndex(index2)) return index1;
-    if (array[index1] < array[index2]) return index1;
+    if (*(array[index1]) < *(array[index2])) return index1;
     return index2;
 }
 
 template <class T>
 void MinHeap<T>::bubbleDown(int index)
 {
-    if (isEmpty() || !isValidIndex(index))
+    if (isEmpty() || !isValidIndex(index) || index == size -1)
         return;
     const int leftChildIndex = indexOfLeftChild(index);
     const int rightChildIndex = indexOfRightChild(index);
     const int minChildIndex = minValueIndex(leftChildIndex, rightChildIndex);
-    const bool mustSwap = isValidIndex(minChildIndex) && array[index] > array[minChildIndex];
+    const bool mustSwap = isValidIndex(minChildIndex) && *(array[index]) > *(array[minChildIndex]);
     if (mustSwap)
     {
         swap(index, minChildIndex);
         bubbleDown(minChildIndex);
     }
+    
 }
 
 template <class T>
 void MinHeap<T>::bubbleUp(int index)
 {
-    if (isEmpty() || !isValidIndex(index))
+    if (isEmpty() || !isValidIndex(index) || index == 0)
         return;
     int parentIndex = indexOfParent(index);
-    const bool mustSwap = isValidIndex(parentIndex) && array[index] < array[parentIndex];
+    const bool mustSwap = isValidIndex(parentIndex) && *(array[index]) < *(array[parentIndex]);
     if (mustSwap)
     {
         swap(parentIndex, index);
         bubbleUp(parentIndex);
-    }
+    }    
 }
 
 

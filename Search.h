@@ -1,12 +1,15 @@
 #pragma once
 #include "DLList.h"
 #include "Node.h"
+#include "MinHeap.h"
 #include "HashTable.h"
 
 class Search
 {
     // lista de nodes para serem expandidas 
     DLList<Node*> open;
+    // lista de prioridade com nodes para serem expandidas 
+    MinHeap<Node*>priorityOpen;
     // lista de nodes expandidas
     DLList<Node*> closed;
     // Para localizar duplicados de forma mais rapida, a chave é uma string, usar (node->toString).
@@ -27,13 +30,14 @@ public:
     ~Search();
     void startSearch();    
     // Atualiza o atributo pai e custo total de cada sucessor
-    void updateNodeStatus(DLList<Node*>& successors, Node* parent);
+    void updateNodeParent(DLList<Node*>& successors, Node* parent);
     void printPath(Node* currentNode);
     void printStats(Node* node = nullptr);
     void initializeKnownStates(Node* rootCopy);
 
     bool dFS();
     bool bFS();
+    bool bestFS();
 
     void removeDuplicates(DLList<Node*>& successors);
 
