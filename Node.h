@@ -8,7 +8,7 @@
 // necessarios para definir e alterar o seu estado.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum class Heuristic { none = 0, bestFs, aStar };
+enum class PriorityValue { cost = 0, heuristic, costPlusHeuristic };
 
 class Node
 {    
@@ -24,18 +24,13 @@ public:
     int cost;
 
     // Define o tipo de euristica usado.
-    // Apenas necessário para algoritmos informados (bestFs, aStar)
-    // Por defeito é "none", mas pode tomar o valor de "bestFs" e "aStar"
-    static Heuristic heuristicType;
+    // Apenas necessário para algoritmos informados (heuristic, costPlusHeuristic)
+    // Por defeito é "cost", mas pode tomar o valor de "heuristic" e "costPlusHeuristic"
+    static PriorityValue priority;
 
     // IMPORTANTE:
-    // Se o algoritmo utilizado for informado (bestFs, aStar), o nó terá que calcular este valor.
-    // Dependendo do valor de heuristicType (variavel a cima) a classe que herdar desta
-    // deverá implementar um metodo que calcule o valor heuristico, tendo em
-    // consideracao o valor de heuristicType:
-    // "none" -> ignorar, por defeito é 0.
-    // "bestFs" -> custo até a solucao.
-    // "aStar" -> custo desde a root + custo até a solucao.
+    // Se o algoritmo utilizado for informado (bestFS, A*), o nó terá que calcular este valor.
+    // Deverá implementar um metodo que calcule o valor heuristico "[manhattan/euclidean] distance".
     int heuristic;
     
     // Apontador para o pai desta Node
@@ -76,7 +71,8 @@ public:
     virtual bool operator==(Node& node) = 0;
 
     //////////////////////////////////////////////////////////////
-    // Metodos necessarios para procuras informadas (bestFs, aStar).
+    // Metodos necessarios para procuras informadas (heuristic, costPlusHeuristic).
+    // IPORTANTE: 
     //////////////////////////////////////////////////////////////
     
     // IMPORTANTE: Deve comparar o valor heuristico
@@ -84,12 +80,6 @@ public:
     
     // IMPORTANTE: Deve comparar o valor heuristico
     virtual bool operator<(Node& node) = 0;
-
-    // IMPORTANTE: Deve comparar o valor heuristico
-    virtual bool operator>=(Node& node) = 0;
-    
-    // IMPORTANTE: Deve comparar o valor heuristico
-    virtual bool operator<=(Node& node) = 0;
 
 };
 

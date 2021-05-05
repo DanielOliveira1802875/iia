@@ -21,16 +21,16 @@ void Search::startSearch()
     useHashTable = false;
 
 
-    if (!bestFS())
-        printStats();
+    /*if (!bestFS())
+        printStats();*/
 
     // DFS
-    /*if (!dFS())
+     /*if (!dFS())
         printStats();*/
 
-    // BFS
-    /*if (!bFS())
-        printStats();*/
+    //BFS
+    if (!bFS())
+        printStats();
 
 
     ///////////////////////////////
@@ -96,12 +96,13 @@ Search::~Search()
 }
 
 // Atualiza o atributo pai e custo total de cada sucessor
-void Search::updateNodeParent(DLList<Node*>& successors, Node* parent)
+void Search::updateNodeStats(DLList<Node*>& successors, Node* parent)
 {
     successors.setIteratorToHead();
     while (successors.isIteratorValid())
     { 
         Node* tmp = successors.getIteratorValue();
+        tmp->cost += parent->cost;
         if(withDuplicates || reconstructPath)
             tmp->parent = parent;
         successors.iteratorNext();
@@ -181,7 +182,7 @@ bool Search::dFS()
         ++totExpansions;
         DLList<Node*> newNodes;
         currentNode->genSuccessors(newNodes);
-        updateNodeParent(newNodes, currentNode);
+        updateNodeStats(newNodes, currentNode);
         if (withDuplicates)  
             removeDuplicates(newNodes);
         totGenerations += newNodes.getSize();
@@ -214,7 +215,7 @@ bool Search::bFS()
         ++totExpansions;
         DLList<Node*> newNodes;
         currentNode->genSuccessors(newNodes);
-        updateNodeParent(newNodes, currentNode); // atualiza pais e custos
+        updateNodeStats(newNodes, currentNode); // atualiza pais e custos
         removeDuplicates(newNodes);
         totGenerations += newNodes.getSize();
         open.addToTail(newNodes);
@@ -248,7 +249,7 @@ bool Search::bestFS()
         ++totExpansions;
         DLList<Node*> newNodes;
         currentNode->genSuccessors(newNodes);
-        updateNodeParent(newNodes, currentNode);
+        updateNodeStats(newNodes, currentNode);
         if (withDuplicates)
             removeDuplicates(newNodes);
         totGenerations += newNodes.getSize();

@@ -30,7 +30,7 @@ public:
     ~Search();
     void startSearch();    
     // Atualiza o atributo pai e custo total de cada sucessor
-    void updateNodeParent(DLList<Node*>& successors, Node* parent);
+    void updateNodeStats(DLList<Node*>& successors, Node* parent);
     void printPath(Node* currentNode);
     void printStats(Node* node = nullptr);
     void initializeKnownStates(Node* rootCopy);

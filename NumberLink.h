@@ -101,12 +101,13 @@ class NumberLink : public Node
     
     // Verifica se e possivel conectar as restantes letras
     bool isDeadState();
+    bool isOutOfBounds(int position);
     bool canConnect2(char* stateCopy, int startPostion, int targetPostion);
     bool isDeadState2();
 public:
     // Devolve um clone deste estado
     Node* getClone() override;
-    NumberLink(char* state, int qntLines, int qntColumns, Heuristic _heuristicType);
+    NumberLink(char* state, int qntLines, int qntColumns, PriorityValue _heuristicType);
     ~NumberLink() override;
     // Devolve uma representação visual deste estado.
     std::string toString() override;
@@ -122,14 +123,10 @@ public:
     void updateSuccessorStats(NumberLink* successor);
     // Gera e devolve uma lista de estados sucessores
     void genSuccessors(DLList<Node*>& successors) override;
-    int goBack(int places, char* stateCpy);
+    int goBack(int position, int places, char* stateCpy);
     bool is360V2();
     // compara o valor heuristico
     bool operator>(Node& node) override;
     // compara o valor heuristico
     bool operator<(Node& node) override;
-    // compara o valor heuristico
-    bool operator>=(Node& node) override;
-    // comparar o valor heuristico
-    bool operator<=(Node& node) override;
 };

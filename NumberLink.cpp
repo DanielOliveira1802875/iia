@@ -11,7 +11,7 @@ int NumberLink::qntColumns = 0;
 int NumberLink::qntLines = 0;
 Letter NumberLink::numbers[26];
 const char NumberLink::outOfBoundsChar;
-Heuristic Node::heuristicType;
+PriorityValue Node::priority;
 
 
 NumberLink::NumberLink()
@@ -127,7 +127,7 @@ void NumberLink::setNextNumber()
 
 
 // Inicia todos os atributos e prepara-se para conetar a letra A
-NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, Heuristic _heuristicType)
+NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, PriorityValue _heuristicType)
 {
     if (outOfBoundsPosition != static_cast<int>(strlen(state)))
     {
@@ -139,7 +139,7 @@ NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, Heuristic _h
         throw std::invalid_argument(
             "NumberLink::NumberLink() O tamanho da string nao corresponde ao tamaho do estado.\n");
 
-    heuristicType = _heuristicType;
+    priority = _heuristicType;
     this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
     memcpy(this->state, state, static_cast<size_t>(outOfBoundsPosition));
 
@@ -169,7 +169,7 @@ NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, Heuristic _h
             else if (numbers[state[i] - A].position2 == outOfBoundsPosition)
             {   // Temos agora as duas posicoes, podemos calcular a distancia Manhattan
                 numbers[state[i] - A].position2 = i;
-                if (heuristicType != Heuristic::none)
+                if (priority != PriorityValue::cost)
                     numbers[state[i] - A].manhattanDistance = calcManhattanDistance(numbers[state[i] - A].position1,
                         numbers[state[i] - A].position2);
             }
@@ -249,13 +249,9 @@ int NumberLink::remainingManhattanDistances()
 
 void NumberLink::updateSuccessorStats(NumberLink* successor)
 {
-    successor->cost = this->cost + 1;
-    if (heuristicType == Heuristic::none) return;
-    const int currentNumberManhattanDistance = calcManhattanDistance(successor->pathHead,
-                                                                     numbers[currentNumber].position1);
-    successor->heuristic = currentNumberManhattanDistance + remainingManhattanDistances();
-    if (heuristicType == Heuristic::aStar)
-        successor->heuristic += successor->cost;
+    if (priority == PriorityValue::cost) return;
+    successor->heuristic = calcManhattanDistance(successor->pathHead, numbers[currentNumber].position1);
+    successor->heuristic += remainingManhattanDistances();
 }
 
 
@@ -291,10 +287,11 @@ void NumberLink::genSuccessors(DLList<Node*>& successors)
     }
 }
 
-int NumberLink::goBack(int places, char* stateCpy)
+int NumberLink::goBack(int position, int places, char* stateCpy)
 {
-    int position = pathHead;    
-    int upPos, downPos, leftPos, rightPos;    
+    if (isOutOfBounds(position))
+        return outOfBoundsPosition;
+    int upPos, downPos, leftPos, rightPos;
     for (int i = 0; i < places; i++)
     {
         stateCpy[position] = '#';
@@ -307,82 +304,53 @@ int NumberLink::goBack(int places, char* stateCpy)
             position = upPos;
         else if (*look(Direction::down, position, stateCpy, downPos) == state[pathHead])
             position = downPos;
-        else return -1;
+        else return outOfBoundsPosition;
     }
-    int endPos;
 
     return position;
 }
 
 bool NumberLink::is360V2()
 {
-    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 1];    
-    memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
+    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+    memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 2);
     stateCpy[pathRoot] = state[pathHead];
-    int back4 = goBack(4,stateCpy);
-    
-    if (back4 >= 0 && calcManhattanDistance(pathHead,back4) == 1  && state[(pathHead+back4)/2] == '.')
+    const int back4Pos = goBack(pathHead, 4, stateCpy);
+
+    if (!isOutOfBounds(back4Pos) && calcManhattanDistance(pathHead, back4Pos) == 1 && state[(pathHead + back4Pos) / 2]
+        == '.')
     {
         //std::cout << toString(stateCpy);
         delete[] stateCpy;
         return true;
     }
-    memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
-    stateCpy[pathRoot] = state[pathHead];
-    int back5 = goBack(5, stateCpy);
-    if (back5 >= 0 && calcManhattanDistance(pathHead, back5) == 2)
+    const int back5Pos = goBack(back4Pos, 1, stateCpy);
+    if (!isOutOfBounds(back5Pos) && calcManhattanDistance(pathHead, back5Pos) == 2)
     {
-        int pos1 = pathHead < back5 ? pathHead : back5;
-        int pos4 = pos1 == pathHead ? back5 : pathHead;
-        if(pathHead / qntColumns == back5 / qntColumns)
-        {
-            if (stateCpy[pos1 + 1] == '.' && stateCpy[pos1 + 2] == '.' && pos1 + 3 == pos4)
-              {
-                //std::cout << toString(stateCpy);
-                delete[] stateCpy;
-                return true;
-              }
-        }
-        else
-        {
-            if (stateCpy[pos1 + qntColumns] == '.' && stateCpy[pos1 + qntColumns*2] == '.' && pos1 + qntColumns*3 == pos4)
+        const int minPos = pathHead < back5Pos ? pathHead : back5Pos;
+        const int maxPos = minPos == pathHead ? back5Pos : pathHead;
+        if (pathHead / qntColumns == back5Pos / qntColumns)
+        {   // Mesma linha, verifica se os espaços entre a curva estao vazios.
+            if (stateCpy[minPos + 1] == '.' && stateCpy[minPos + 2] == '.' && minPos + 3 == maxPos)
             {
                 //std::cout << toString(stateCpy);
                 delete[] stateCpy;
                 return true;
             }
-        } 
+        }
+        else
+        {   // mesma coluna, verifica se os espaços entre a curva estao vazios.
+            if (stateCpy[minPos + qntColumns] == '.' && stateCpy[minPos + qntColumns * 2] == '.' && minPos + qntColumns
+                * 3 == maxPos)
+            {
+                //std::cout << toString(stateCpy);
+                delete[] stateCpy;
+                return true;
+            }
+        }
     }
 
     delete[] stateCpy;
-    return false;
-}
-
-bool NumberLink::operator>(Node& node)
-{
-    if (this->heuristic > node.heuristic)
-        return true;
-    return false;
-}
-
-bool NumberLink::operator<(Node& node)
-{
-    if (this->heuristic < node.heuristic)
-        return true;
-    return false;
-}
-
-bool NumberLink::operator>=(Node& node)
-{
-    if (this->heuristic >= node.heuristic)
-        return true;
-    return false;
-}
-
-bool NumberLink::operator<=(Node& node)
-{
-    if (this->heuristic <= node.heuristic)
-        return true;
     return false;
 }
 
@@ -468,20 +436,52 @@ bool NumberLink::canConnect(char* stateCopy, int startPosition, int endPosition)
 bool NumberLink::isDeadState()
 {
     bool isDead = false;
-    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 1];
+    char* stateCpy = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
 
-    // Testa a letra atual
-    //memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
-    //isDead = !canConnect(stateCpy, pathHead, numbers[currentNumber].position1);
     // Testa todas as letras restantes
     const int nextLetterIndex = currentNumber + 1;
     for (int i = nextLetterIndex; i < totalNumbers && !isDead; i++)
     {
         if (connected[i])
             continue;
-        memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 1);
+        memcpy(stateCpy, state, static_cast<size_t>(outOfBoundsPosition) + 2);
         isDead = !canConnect(stateCpy, numbers[i].position1, numbers[i].position2);
     }
     delete[] stateCpy;
     return isDead;
 }
+
+bool NumberLink::isOutOfBounds(int position)
+{
+    return position < 0 ? true : (position >= outOfBoundsPosition ? true : false);
+}
+
+bool NumberLink::operator>(Node& node)
+{
+    int thisPriority = 0, otherPriority = 0;
+
+    if (priority == PriorityValue::costPlusHeuristic)
+    {
+        thisPriority = cost + heuristic;
+        otherPriority = node.cost + node.heuristic;
+    }
+    else if (priority == PriorityValue::heuristic)
+    {
+        thisPriority = heuristic;
+        otherPriority = node.heuristic;
+    }
+    else if (priority == PriorityValue::cost)
+    {
+        thisPriority = cost;
+        otherPriority = node.cost;
+    }    
+    if (thisPriority > otherPriority)
+        return true;
+    return false;
+}
+
+bool NumberLink::operator<(Node& node)
+{
+    return !(*this > node);
+}
+

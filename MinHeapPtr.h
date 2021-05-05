@@ -150,7 +150,6 @@ void MinHeapPtr<T>::bubbleUp(int index)
     }    
 }
 
-
 template <class T>
 MinHeapPtr<T>::MinHeapPtr()
 {
