@@ -11,7 +11,7 @@ int NumberLink::qntColumns = 0;
 int NumberLink::qntLines = 0;
 Letter NumberLink::numbers[26];
 const char NumberLink::outOfBoundsChar;
-PriorityValue Node::priority;
+Priority Node::priority;
 
 
 NumberLink::NumberLink()
@@ -61,19 +61,19 @@ const char* NumberLink::look(Direction direction, int startPosition, const char*
     {
     case Direction::up:
         endPosition -= qntColumns;
-        isPositionValid = endPosition > -1 && endPosition < outOfBoundsPosition;
+        isPositionValid = !isOutOfBounds(endPosition);
         break;
     case Direction::down:
         endPosition += qntColumns;
-        isPositionValid = endPosition > -1 && endPosition < outOfBoundsPosition;
+        isPositionValid = !isOutOfBounds(endPosition);
         break;
     case Direction::left:
         endPosition -= 1;
-        isPositionValid = endPosition / qntColumns == line && endPosition > -1 && endPosition < outOfBoundsPosition;
+        isPositionValid = endPosition / qntColumns == line && !isOutOfBounds(endPosition);
         break;
     case Direction::right:
         endPosition += 1;
-        isPositionValid = endPosition / qntColumns == line && endPosition > -1 && endPosition < outOfBoundsPosition;
+        isPositionValid = endPosition / qntColumns == line && !isOutOfBounds(endPosition);
         break;
     }
     if (isPositionValid)
@@ -125,32 +125,119 @@ void NumberLink::setNextNumber()
     pathRoot = pathHead = outOfBoundsPosition;
 }
 
-
-// Inicia todos os atributos e prepara-se para conetar a letra A
-NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, PriorityValue _heuristicType)
+// Inicia todos os atributos referentes a uma instancia e prepara-se para conetar a letra A
+void NumberLink::loadInstace(int number)
 {
-    if (outOfBoundsPosition != static_cast<int>(strlen(state)))
+    priority = Priority::cost;
+    if (state != nullptr)
+        delete[] state;
+    const char inst1[] = "AB.....AB";
+    const char inst2[] = "A.B...B.A";
+    const char inst3[] = "AB.CD........AB.CD";
+    const char inst4[] = "AB..CD...........................AB...CD";
+    const char inst5[] = "............A....B....B.CD.A..C........D";
+    const char inst6[] = "D........C..A....B....B....A..C........D";
+    const char inst7[] = "C..............D.BA............DA........E...B..E.......C...";
+    const char inst8[] = "............A....B....B.CD.A..C........D............E....F....F.GH.E..G........H";
+    const char inst9[] = "...D....C..BE....CA.....E............A....B...D..";
+    const char inst10[] = "............BC..D......D.E..............F.E.G........................H..ABCAHF..G";
+    const char inst11[] = "..........A..BA.HI..........I....G..F.E...F..H..JCBE........C.....G.J.D..................D..........";
+    const char inst12[] = "AD............C..H...E......B.B.H..............................G........GF.....................A....D...F...E....C.......";
+    switch (number)
     {
-        qntColumns = qntColumns_;
-        qntLines = qntLines_;
+    case 1:
+        qntLines = 3;
+        qntColumns = 3;        
         outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst1, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 2:
+        qntLines = 3;
+        qntColumns = 3;        
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst2, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 3:        
+        qntLines = 3;
+        qntColumns = 6;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst3, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 4:
+        qntLines = 4;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst4, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 5:
+        qntLines = 4;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst5, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 6:
+        qntLines = 4;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst6, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 7:
+        qntLines = 6;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst7, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 8:
+        qntLines = 8;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst8, static_cast<size_t>(outOfBoundsPosition));
+        break;    
+    case 9:
+        qntLines = 7;
+        qntColumns = 7;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst9, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 10:
+        qntLines = 9;
+        qntColumns = 9;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst10, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 11:
+        qntLines = 10;
+        qntColumns = 10;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst11, static_cast<size_t>(outOfBoundsPosition));
+        break;
+    case 12:
+        qntLines = 11;
+        qntColumns = 11;
+        outOfBoundsPosition = qntColumns * qntLines;
+        this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
+        memcpy(state, inst12, static_cast<size_t>(outOfBoundsPosition));
+        break;
+        default:
+            throw std::invalid_argument("NumberLink::loadInstace() A instancia nao existe\n");
     }
-    if (outOfBoundsPosition != static_cast<int>(strlen(state)))
-        throw std::invalid_argument(
-            "NumberLink::NumberLink() O tamanho da string nao corresponde ao tamaho do estado.\n");
-
-    priority = _heuristicType;
-    this->state = new char[static_cast<size_t>(outOfBoundsPosition) + 2];
-    memcpy(this->state, state, static_cast<size_t>(outOfBoundsPosition));
-
-    this->state[outOfBoundsPosition] = outOfBoundsChar;
-    this->state[outOfBoundsPosition + 1] = '\0';
-
+    state[outOfBoundsPosition + 1] = '\0';
+    state[outOfBoundsPosition] = outOfBoundsChar;    
     numbersRemaining = 0;
     currentNumber = 0;
     pathRoot = outOfBoundsPosition;
     pathHead = outOfBoundsPosition;
-
     for (short i = 0; i < 26; ++i)
     {
         numbers[i].upperLetter = static_cast<char>(A + i);
@@ -160,7 +247,6 @@ NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, PriorityValu
         numbers[i].manhattanDistance = 0;
         connected[i] = true;
     }
-
     for (int i = 0; i < outOfBoundsPosition; i++)
         if (isalpha(state[i]))
         {
@@ -168,10 +254,8 @@ NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, PriorityValu
                 numbers[state[i] - A].position1 = i;
             else if (numbers[state[i] - A].position2 == outOfBoundsPosition)
             {   // Temos agora as duas posicoes, podemos calcular a distancia Manhattan
-                numbers[state[i] - A].position2 = i;
-                if (priority != PriorityValue::cost)
-                    numbers[state[i] - A].manhattanDistance = calcManhattanDistance(numbers[state[i] - A].position1,
-                        numbers[state[i] - A].position2);
+                numbers[state[i] - A].position2 = i;                
+                numbers[state[i] - A].manhattanDistance = calcManhattanDistance(numbers[state[i] - A].position1,numbers[state[i] - A].position2);
             }
             else
                 throw std::invalid_argument("NumberLink::NumberLink() As letras deve ser pares\n");
@@ -184,6 +268,14 @@ NumberLink::NumberLink(char* state, int qntLines_, int qntColumns_, PriorityValu
     numbersRemaining /= 2;
     --numbersRemaining;
     setNextNumber();
+}
+
+NumberLink::NumberLink(int instance)
+{
+    qntColumns = qntLines = outOfBoundsPosition = currentNumber= 0;
+    pathRoot = pathHead = numbersRemaining = 0;
+    state = nullptr;
+    loadInstace(instance);
 }
 
 NumberLink::~NumberLink() { delete[] state; }
@@ -249,7 +341,7 @@ int NumberLink::remainingManhattanDistances()
 
 void NumberLink::updateSuccessorStats(NumberLink* successor)
 {
-    if (priority == PriorityValue::cost) return;
+    if (priority == Priority::cost) return;
     successor->heuristic = calcManhattanDistance(successor->pathHead, numbers[currentNumber].position1);
     successor->heuristic += remainingManhattanDistances();
 }
@@ -408,6 +500,7 @@ bool NumberLink::is360()
     return flag;
 }
 
+
 // Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
 // IMPORTANTE: passar uma copia do estado, pois este e alterado.
 bool NumberLink::canConnect(char* stateCopy, int startPosition, int endPosition)
@@ -458,8 +551,8 @@ bool NumberLink::isOutOfBounds(int position)
 
 int NumberLink::getPriority()
 {
-    if (priority == PriorityValue::costPlusHeuristic) return cost + heuristic;
-    if (priority == PriorityValue::heuristic) return heuristic;
+    if (priority == Priority::costPlusHeuristic) return cost + heuristic;
+    if (priority == Priority::heuristic) return heuristic;
     return cost;
 }
 

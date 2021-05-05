@@ -154,7 +154,6 @@ void MinHeap<T>::bubbleUp(int index)
 template <class T>
 MinHeap<T>::MinHeap()
 {
-    isPointer = std::is_pointer<T>::value;
     capacity = 10;
     size = 0;
     array = new T[10];

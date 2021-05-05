@@ -4,13 +4,30 @@
 Search::Search(Node* root)
 {
     this->root = root;
-    totGenerations = totExpansions = limit =  0;
+    resetSearch();
+    startSearch();
+}
+
+void Search::setRootNode(Node* root)
+{
+    this->root = root;
+    resetSearch();
+    startSearch();
+}
+
+
+void Search::resetSearch()
+{
+    totGenerations = totExpansions = limit = 0;
     root->cost = 0;
     root->parent = nullptr;
     root->resetState();
     knownStates = nullptr;
-    withDuplicates = reconstructPath =  useHashTable = false;    
-    startSearch();
+    withDuplicates = reconstructPath = useHashTable = false;
+}
+
+Search::~Search()
+{
 }
 
 void Search::startSearch()
@@ -21,7 +38,7 @@ void Search::startSearch()
     useHashTable = false;
 
 
-    if (!bestFS())
+    if (!aStar())
         printStats();
 
     // DFS
@@ -33,67 +50,8 @@ void Search::startSearch()
         printStats();*/
 
 
-    ///////////////////////////////
-    //// Input de dados manual ////
-    ///////////////////////////////
-    
-    /*char answer = 's';
-    int searchType = -1;
-    std::cout << "\nEstado inicial: \n";
-    do
-    {  
-        std::cout << root->toString() << "\nGerar novo estado? (s/n): ";
-        std::cin >> answer;
-        if (answer == 's')
-            root->resetState();
-    } while (answer == 's');    
-    std::cout << "\nExiste ciclos entre os estados? (s/n): ";
-    std::cin >> answer;
-    if (answer == 's' || answer == 'S')    
-        withDuplicates = true;    
-    else
-        withDuplicates = false;
-    
-    std::cout << "\nReconstruir o caminho da solucao? (s/n): ";
-    std::cin >> answer;
-    if (answer == 's')
-        reconstructPath = true;
-    else
-        reconstructPath = false;
-    std::cout << "\n1 - DFS || 2 - BFS || 3 - DFS iterativo\nTipo de Procura: ";
-    std::cin >> searchType;    
-
-    if (searchType == 1)
-    {
-        std::cout << "\nProfundidade maxima do DFS  (-1 sem limite): ";
-        std::cin >> limit;
-    }
-    else if (searchType == 3)
-        limit = 0;
-    if (withDuplicates && (searchType == 1 && limit == -1) || searchType == 2)
-    {
-        std::cout << "\nUsar HashTable para localizar os duplicados entre ramos? (s/n): ";
-        std::cin >> answer;
-        if (answer == 's')
-            useHashTable = true;
-        else
-            useHashTable = false;
-    }
-    if (searchType == 1 || searchType == 3)
-    {
-        if (!dFS())
-            printStats();
-    }
-    else if (searchType == 2)
-    {
-        if (!bFS())
-            printStats();
-    }*/
 }
 
-Search::~Search()
-{
-}
 
 // Atualiza o atributo pai e custo total de cada sucessor
 void Search::updateNodeStats(DLList<Node*>& successors, Node* parent)
@@ -229,17 +187,17 @@ bool Search::bFS()
     return false;
 }
 
-bool Search::bestFS()
-{   
+bool Search::aStar(Priority priority)
+{
     Node* rootCopy = root->getClone();
-    priorityOpen.addValue(rootCopy);
+    Node::priority = priority;
+    minOpen.addValue(rootCopy);
     if (withDuplicates && useHashTable)
         initializeKnownStates(rootCopy);
-    while (!priorityOpen.isEmpty())
+    while (!minOpen.isEmpty())
     {
-        Node* currentNode = priorityOpen.removeMin();
+        Node* currentNode = minOpen.removeMin();
         //std::cout << currentNode->toString();
-        //std::cout << currentNode->heuristic<< " ";
         if (currentNode->isSolution())
         {
             printStats(currentNode);
@@ -256,7 +214,7 @@ bool Search::bestFS()
         while (!newNodes.isEmpty())
         {
             Node* successor = newNodes.deleteFromHead();
-            priorityOpen.addValue(successor);
+            minOpen.addValue(successor);
         }
         if (withDuplicates || reconstructPath)
             closed.addToHead(currentNode);
@@ -294,7 +252,7 @@ void Search::removeDuplicates(DLList<Node*>& successors)
         return;
     }
 
-    // verifica só no proprio ramo (até à root)
+    // verifica só no proprio caminho (até à root)
     successors.setIteratorToHead();
     while (successors.isIteratorValid())
     {
@@ -313,22 +271,6 @@ void Search::removeDuplicates(DLList<Node*>& successors)
         successors.iteratorNext();
     }
 
-    // Verifica o open e closed por repetidos (dempra mt tempo)
-    /*successors.setIteratorToHead();
-    open.setIteratorToHead();
-    closed.setIteratorToHead();
-    while  (open.isIteratorValid())
-    {
-        if (successors.isInList(open.getIteratorValue()))
-            successors.deleteNode(open.getIteratorValue());
-        open.iteratorNext();
-    }
-    while (closed.isIteratorValid())
-    {
-        if (successors.isInList(closed.getIteratorValue()))
-            successors.deleteNode(closed.getIteratorValue());
-        closed.iteratorNext();
-    }*/
 }
 
 void Search::clearLists()
@@ -337,7 +279,7 @@ void Search::clearLists()
         delete open.deleteFromHead();
     while (!closed.isEmpty())
         delete closed.deleteFromHead();
-    priorityOpen.clear();
+    minOpen.clear();
 
     if (knownStates != nullptr)
     {   // NOTA: Porque passei nullptr no valor do no. Caso contrario, era necessário desalocar a memoria (aqui OU em open e close).

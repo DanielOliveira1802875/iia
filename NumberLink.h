@@ -76,6 +76,7 @@ class NumberLink : public Node
     NumberLink();
     // Prepara o estado para a ligacao do proximo numero/letra
     void setNextNumber();
+    void loadInstace(int number);
     // Altera a letra atual para outro caracter (evita que se conecte a ele proprio)
     void maskPathRoot();
     // Restaura a letra atual
@@ -96,18 +97,14 @@ class NumberLink : public Node
     bool is360();
     // Funcao recursiva que tenta alcancar um caracter apartir de uma posicao.
     // IMPORTANTE: passar uma copia do estado, pois e alterado.
-
-    bool canConnect(char* stateCopy, int startPosition, int endPosition);
-    
+    bool canConnect(char* stateCopy, int startPosition, int endPosition);    
     // Verifica se e possivel conectar as restantes letras
     bool isDeadState();
     bool isOutOfBounds(int position);
-    bool canConnect2(char* stateCopy, int startPostion, int targetPostion);
-    bool isDeadState2();
 public:
     // Devolve um clone deste estado
     Node* getClone() override;
-    NumberLink(char* state, int qntLines, int qntColumns, PriorityValue _heuristicType);
+    NumberLink(int instance);
     ~NumberLink() override;
     // Devolve uma representação visual deste estado.
     std::string toString() override;

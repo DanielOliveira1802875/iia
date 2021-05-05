@@ -8,7 +8,7 @@
 // necessarios para definir e alterar o seu estado.
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum class PriorityValue { cost = 0, heuristic, costPlusHeuristic };
+enum class Priority { cost = 0, heuristic, costPlusHeuristic };
 
 class Node
 {    
@@ -16,46 +16,38 @@ class Node
 
 
 public:
+    Node()
+    {
+        cost = 1;
+        heuristic = 0;
+    }
+    virtual ~Node() {}
+
+    ////////////////////////////////////////////////
+    // OS METODOS DESTA CLASS DEVEM SER  
+    // IMPLEMENTADOS  PELAS CLASSES HERDEIRAS
+    ////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////
+    // PROCURAS CEGAS (BFS,DFS E IDFS)
+    //////////////////////////////////////////////////////////////
 
     // Custo total desde a root (custo dos nós ascendentes mais o custo deste nó)
-    // IMPORTANTE: Devido aos algoritmos informados, este valor deverá ser calculado
-    // no momento que se geram os sucessores, assumindo o seguinte valor:
-    // [custo do pai] + [custo desde o pai até esta node]
-    int cost;
-
-    // Define o tipo de euristica usado.
-    // Apenas necessário para algoritmos informados (heuristic, costPlusHeuristic)
-    // Por defeito é "cost", mas pode tomar o valor de "heuristic" e "costPlusHeuristic"
-    static PriorityValue priority;
-
-    // IMPORTANTE:
-    // Se o algoritmo utilizado for informado (bestFS, A*), o nó terá que calcular este valor.
-    // Deverá implementar um metodo que calcule o valor heuristico "[manhattan/euclidean] distance".
-    int heuristic;
+    // IMPORTANTE: devemos colocar apenas o custo desde o pai,
+    // o algoritmo irá posteriormente somar o custo dos ascendestes.
+    // Caso o custo seja utitário, podemos ignorar esta variavel.
+    int cost;    
     
     // Apontador para o pai desta Node
     // Não é necessário definir, o algoritmo encarrega-se disso.
-    Node* parent = nullptr;
-
-    Node()
-    {
-        cost = 1;        
-        heuristic = 0;
-    }
-    virtual ~Node(){}
-
-    ////////////////////////////////////////////////
-    // Os proximos metodos deveram ser        
-    // implementados pela classe que herdar desta 
-    ////////////////////////////////////////////////
+    Node* parent = nullptr; 
 
     // Gera um estado inicial, aleatório ou não.
     virtual void resetState() = 0;
 
     // Gera e devolve uma lista de estados sucessores
-    // IMPORTANTE: Devido aos algoritmos informados, o custo (cost)
-    // deverá ser calculado neste metodo, assumindo o seguinte valor:
-    // [custo do pai] + [custo desde o pai até esta node]
+    // IMPORTANTE: caso o custo seja diferente de 1, e necessario defini-lo,
+    // (variavel cost) com custo DESDE O PAI ATE AO SUCESSOR.
     virtual void genSuccessors(DLList<Node*>& successors) = 0;
 
     // Verifica se este estado é uma solução
@@ -67,13 +59,23 @@ public:
     // Devolve uma representação visual deste estado.
     virtual std::string toString() = 0;
 
-    // Compara este estado com outro
+    // Compara este estado com outro, necessario para procurar duplicados
     virtual bool operator==(Node& node) = 0;
 
     //////////////////////////////////////////////////////////////
-    // Metodos necessarios para procuras informadas (heuristic, costPlusHeuristic).
-    // IPORTANTE: 
+    // PROCURAS INFORMADAS (BESTFS E A*)
     //////////////////////////////////////////////////////////////
+
+    // Para que os metodos dos operadores ('<' '>') saibam o que comparar.
+    // Pode assumir os valores (cost, heuristic, costPlusHeuristic).
+    // Necessário para algoritmos informados, implementados com a MinHeap
+    // Por defeito é "cost", mas pode tomar o valor de "heuristic" e "costPlusHeuristic"
+    static Priority priority;
+
+    // IMPORTANTE:
+    // Se o algoritmo utilizado for informado (bestFS, A*), o nó terá que calcular este valor.
+    // Deverá implementar um metodo que calcule o valor heuristico "[manhattan/euclidean] distance".
+    int heuristic;
     
     // IMPORTANTE: Deve comparar o valor heuristico
     virtual bool operator>(Node& node) = 0;

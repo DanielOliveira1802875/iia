@@ -9,7 +9,7 @@ class Search
     // lista de nodes para serem expandidas 
     DLList<Node*> open;
     // lista de prioridade com nodes para serem expandidas 
-    MinHeapPtr<Node*>priorityOpen;
+    MinHeapPtr<Node*> minOpen;
     // lista de nodes expandidas
     DLList<Node*> closed;
     // Para localizar duplicados de forma mais rapida, a chave é uma string, usar (node->toString).
@@ -25,9 +25,11 @@ class Search
     int limit;    
     Node* root;
 
-public:    
+public:   
     Search(Node* root);
     ~Search();
+    void resetSearch();
+    void setRootNode(Node* root);
     void startSearch();    
     // Atualiza o atributo pai e custo total de cada sucessor
     void updateNodeStats(DLList<Node*>& successors, Node* parent);
@@ -37,7 +39,7 @@ public:
 
     bool dFS();
     bool bFS();
-    bool bestFS();
+    bool aStar(Priority priority = Priority::costPlusHeuristic);
 
     void removeDuplicates(DLList<Node*>& successors);
 
