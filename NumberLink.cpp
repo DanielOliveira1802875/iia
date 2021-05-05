@@ -456,32 +456,25 @@ bool NumberLink::isOutOfBounds(int position)
     return position < 0 ? true : (position >= outOfBoundsPosition ? true : false);
 }
 
+int NumberLink::getPriority()
+{
+    if (priority == PriorityValue::costPlusHeuristic) return cost + heuristic;
+    if (priority == PriorityValue::heuristic) return heuristic;
+    return cost;
+}
+
 bool NumberLink::operator>(Node& node)
 {
-    int thisPriority = 0, otherPriority = 0;
-
-    if (priority == PriorityValue::costPlusHeuristic)
-    {
-        thisPriority = cost + heuristic;
-        otherPriority = node.cost + node.heuristic;
-    }
-    else if (priority == PriorityValue::heuristic)
-    {
-        thisPriority = heuristic;
-        otherPriority = node.heuristic;
-    }
-    else if (priority == PriorityValue::cost)
-    {
-        thisPriority = cost;
-        otherPriority = node.cost;
-    }    
-    if (thisPriority > otherPriority)
+    if (getPriority() > ((NumberLink&)node).getPriority())
         return true;
     return false;
 }
 
+
 bool NumberLink::operator<(Node& node)
 {
-    return !(*this > node);
+    if (getPriority() < ((NumberLink&)node).getPriority())
+        return true;
+    return false;
 }
 

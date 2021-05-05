@@ -21,16 +21,16 @@ void Search::startSearch()
     useHashTable = false;
 
 
-    /*if (!bestFS())
-        printStats();*/
+    if (!bestFS())
+        printStats();
 
     // DFS
      /*if (!dFS())
         printStats();*/
 
     //BFS
-    if (!bFS())
-        printStats();
+    /*if (!bFS())
+        printStats();*/
 
 
     ///////////////////////////////

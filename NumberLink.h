@@ -127,6 +127,7 @@ public:
     bool is360V2();
     // compara o valor heuristico
     bool operator>(Node& node) override;
+    int getPriority();
     // compara o valor heuristico
     bool operator<(Node& node) override;
 };
